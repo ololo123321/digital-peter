@@ -23,32 +23,33 @@ class ExamplesIterator(ABC):
 
 
 class HTRIterator(ExamplesIterator):
-    def __init__(self, examples, dev_mode: bool):
+    def __init__(self, examples, test_mode: bool):
         super().__init__(examples)
-        self.dev_mode = dev_mode  # train или valid
+        self.test_mode = test_mode  # train или valid
 
     def __iter__(self):
         for example in self.examples:
-            if self.dev_mode:
-                x = example.img, example.char_ids, example.logits_len, len(example.text)
+            if self.test_mode:
+                x = example.img
+                yield x
             else:
-                x = example.img,
-            y = tf.zeros_like(example.logits_len)
-            yield x, y
+                x = example.img, example.char_ids, example.logits_len, len(example.text)
+                y = tf.zeros_like(example.logits_len)
+                yield x, y
 
     @property
     def output_types(self):
-        if self.dev_mode:
-            return tf.string, tf.int32, tf.int32, tf.int32
+        if self.test_mode:
+            return tf.string
         else:
-            return tf.string, tf.float32
+            return tf.string, tf.int32, tf.int32, tf.int32
 
     @property
     def output_shapes(self):
-        if self.dev_mode:
-            return tf.TensorShape([]), tf.TensorShape([None]), tf.TensorShape([]), tf.TensorShape([])
+        if self.test_mode:
+            return tf.TensorShape([])
         else:
-            return tf.TensorShape([]), tf.TensorShape([])
+            return tf.TensorShape([]), tf.TensorShape([None]), tf.TensorShape([]), tf.TensorShape([])
 
 
 class LMIterator(ExamplesIterator):

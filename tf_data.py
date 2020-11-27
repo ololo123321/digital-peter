@@ -302,7 +302,7 @@ class DataPipelineBuilderHTR:
         )
 
         # чтение изображений
-        read_fn = partial(read_fn_joint_inference, channels=self.num_channels)
+        read_fn = partial(read_fn_htr_inference, channels=self.num_channels)
         ds = ds.map(read_fn, num_parallel_calls=AUTOTUNE)
 
         # приведение к фиксированной высоте (без изменения пропорций)
@@ -393,3 +393,9 @@ def read_fn_joint_inference(path, char_ids, next_char_ids, channels):
     img = tf.io.decode_png(img, channels=channels)
     x = img, char_ids
     return x
+
+
+def read_fn_htr_inference(path, channels):
+    img = tf.io.read_file(path)
+    img = tf.io.decode_png(img, channels=channels)
+    return img

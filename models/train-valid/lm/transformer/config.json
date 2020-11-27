@@ -16,7 +16,7 @@
     "train": {
         "epochs": 1000,
         "batch_size": 32,
-        "model_dir": "/datadrive/digital_peter_aij2020/models/lm/transformer_lm_keras_api_4_4_32_1024_v4_with_letters/",
+        "model_dir": "/home/digital_peter_aij2020/models/lm/transformer_lm_keras_api_4_4_32_1024_v4_with_letters/",
         "noam_scheme": true,
         "warmup_steps": 4000,
         "buffer": 1000,

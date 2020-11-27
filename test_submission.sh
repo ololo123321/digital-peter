@@ -19,7 +19,7 @@ time docker run -it \
     -v ${output_dir}:${output_dir_mnt} \
     -w /tmp \
     --gpus all \
-    tensorflow_kenlm:1.1.3 python predict_joint_final.py \
+    tensorflow_kenlm:1.1.3 python predict.py \
         --input_dir=${input_dir_mnt} \
         --output_dir=${output_dir_mnt} \
         --w_ctc=50 \
@@ -28,4 +28,5 @@ time docker run -it \
         --w_joint=25 \
         --alpha=0.7 \
         --beta=5 \
-        --beam_width=100
+        --beam_width=100 \
+        --val_mode

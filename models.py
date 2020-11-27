@@ -321,7 +321,7 @@ class HTRModel(BaseModel):
     def get_ctc_prob(self, examples: List[Example], **kwargs) -> np.ndarray:
         """возвращает вероятности символов"""
         batch_size = kwargs.get("batch_size", self.config['predict']['batch_size'])
-        it = HTRIterator(examples=examples, dev_mode=False)
+        it = HTRIterator(examples=examples, test_mode=True)
         ds_test = self.data_pipeline.build_test_dataset(it, batch_size=batch_size)
         char_prob = self.dec_model.predict(ds_test)  # [N, T, V]
         return char_prob
@@ -347,7 +347,8 @@ class BaseLanguageModel(BaseModel):
             direction=self.config["model"]["direction"],
             char2id=self.char2id,
             add_seq_borders=self.config["data"]["add_seq_borders"],
-            training=False
+            training=False,
+            pad=True
         )
         ds = self.data_pipeline.build_test_dataset(it, batch_size=batch_size)
         res = []
@@ -497,7 +498,9 @@ class JointModel(BaseModel):
 
         self.htr = None  # для кодирования изображения
         self.model = None
-        self.model_inference = None  # для декодирования
+
+        self.enc_inference = None  # htr без головы на логиты словаря
+        self.dec_inference = None  # transformer + lm
 
         self.data_pipeline_dec = None
 
@@ -556,19 +559,16 @@ class JointModel(BaseModel):
             model_dir_enc = self.config['model']['enc']['pretrained_dir']
             model_dir_lm = self.config['model']['lm']['pretrained_dir']
             config_name_enc = config_name_lm = 'config.json'
-            model_name_enc = 'model.hdf5'
             config_dec = self.config['model']['dec']
         else:
             model_dir_enc = model_dir_dec = model_dir_lm = self.config['model']['joint_dir']
             config_name_enc = 'config_encoder.json'
             config_name_lm = 'config_lm.json'
-            model_name_enc = 'encoder.hdf5'
-            config_dec = json.load(open(os.path.join(model_dir_dec, 'config_dec.json')))
+            config_dec = json.load(open(os.path.join(model_dir_dec, 'config_decoder.json')))
 
         # encoder
         self.htr = HTRModel.load(model_dir=model_dir_enc, config_name=config_name_enc)
         self.htr.build()
-        self.htr.restore(model_dir=model_dir_enc, model_name=model_name_enc)
 
         # lm
         lm = TransformerLanguageModel.load(model_dir=model_dir_lm, config_name=config_name_lm)
@@ -613,7 +613,12 @@ class JointModel(BaseModel):
                                                    name="frames_features")
         inputs_inference = [char_ids_ph, frames_features_ph]
         outputs_inference = build_joint_body(*inputs_inference)
-        self.model_inference = tf.keras.Model(inputs=inputs_inference, outputs=outputs_inference)
+        self.dec_inference = tf.keras.Model(inputs=inputs_inference, outputs=outputs_inference)
+
+        self.enc_inference = tf.keras.Model(
+            inputs=self.htr.dec_model.inputs,
+            outputs=self.htr.dec_model.get_layer("decoder_baseline").output
+        )
 
     def compile(self, model, tvars: list = None, noam_scheme: bool = True, lr: float = 1e-3):
         if tvars is not None:
@@ -627,14 +632,14 @@ class JointModel(BaseModel):
             self,
             examples: List[Example],
             candidates: List[Example] = None,
-            img2id: Dict[str: int] = None,
+            img2id: Dict[str, int] = None,
             batch_size_enc: int = 128,
             batch_size_dec: int = 512
     ):
         # кодирование изображений
-        it_htr = HTRIterator(examples, dev_mode=False)
+        it_htr = HTRIterator(examples, test_mode=True)
         ds = self.data_pipeline.build_test_dataset(it_htr, batch_size=batch_size_enc)
-        features_frames = self.htr.predict(ds)
+        features_frames = self.enc_inference.predict(ds)
 
         # декодирование
         it_joint = JointIterator(
@@ -654,7 +659,7 @@ class JointModel(BaseModel):
         for img_paths, char_ids, char_ids_next in iter(ds):
             indices = [img2id[img.decode()] for img in img_paths.numpy()]
             batch = char_ids, features_frames[indices]
-            prob = self.model_inference.predict_on_batch(batch)
+            prob = self.dec_inference.predict_on_batch(batch)
             seq_scores = get_seq_scores(
                 prob=prob,
                 char_ids_next=char_ids_next,
@@ -704,7 +709,9 @@ class JointModel(BaseModel):
     @classmethod
     def load(cls, model_dir: str, verbose: bool = True, config_name: str = "config.json"):
         # TODO: рассмотреть случай обучения
+        enc_config = json.load(open(os.path.join(model_dir, 'config_encoder.json')))
         config = {
+            "data": enc_config["data"],
             "model": {
                 "joint_dir": model_dir
             }
@@ -716,5 +723,5 @@ class JointModel(BaseModel):
     def restore(self, model_dir=None, model_name="model.hdf5"):
         # TODO: рассмотреть случай обучения
         model_dir = model_dir or self.config["model"]["joint_dir"]
-        self.htr.restore(model_dir=model_dir, model_name='encoder.hdf5')
-        self.model_inference.load_weights(os.path.join(model_dir, "decoder.hdf5"))
+        self.enc_inference.load_weights(os.path.join(model_dir, "encoder.hdf5"))
+        self.dec_inference.load_weights(os.path.join(model_dir, "decoder.hdf5"))

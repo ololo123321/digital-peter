@@ -34,7 +34,7 @@
         "es_patience": 20,
         "lr_reduction_factor": 0.2,
         "lr_reduction_patience": 15,
-        "model_dir": "/datadrive/digital_peter_aij2020/models/htr/train_test/flor_bigru_v3_ctc_pretrained_on_petr_bentham_iam_finetuned_on_petr_distort_elastic_fixed",
+        "model_dir": "/home/digital_peter_aij2020/models/htr/train_test/flor_bigru_v3_ctc_pretrained_on_petr_bentham_iam_finetuned_on_petr_distort_elastic_fixed",
         "batch_size": 16,
         "epochs": 1000
     },
