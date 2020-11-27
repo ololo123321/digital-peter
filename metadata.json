@@ -1,4 +1,4 @@
 {
    "image": "ololo123321/tensorflow_kenlm:1.1.3",
-   "entry_point": "python predict.py"
+   "entry_point": "python predict.py --input_dir=/data --output_dir=/output"
 }

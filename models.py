@@ -581,7 +581,7 @@ class JointModel(BaseModel):
         dec = TransformerDecoder(vocab_size=vocab_size_lm, **config_dec)
 
         d_model = config_dec['num_heads'] * config_dec['head_dim']
-        dense_input_dec = tf.keras.layers.Dense(d_model, name='dense_input_dec')
+        dense_input_dec = tf.keras.layers.Dense(d_model, name='dence_input_dec')  # TODO: исправить очепятку dence -> dense
         dense_vocab_dec = tf.keras.layers.Dense(vocab_size_lm, name='dense_vocab_dec')
         dense_vocab_lm = tf.keras.layers.Dense(vocab_size_lm, name='dense_vocab_lm')
 
@@ -617,7 +617,7 @@ class JointModel(BaseModel):
 
         self.enc_inference = tf.keras.Model(
             inputs=self.htr.dec_model.inputs,
-            outputs=self.htr.dec_model.get_layer("decoder_baseline").output
+            outputs=self.htr.dec_model.get_layer("decoder_baseline").output  # TODO: не забыть поправить при смене названия соответствующего слоя
         )
 
     def compile(self, model, tvars: list = None, noam_scheme: bool = True, lr: float = 1e-3):

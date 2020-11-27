@@ -390,7 +390,8 @@ class EncoderDepthWiseConv(tf.keras.layers.Layer):
 
 # frame encoders
 
-class BiRNNEncoder(tf.keras.layers.Layer):
+class DecoderBaseline(tf.keras.layers.Layer):
+    # TODO: переименовать в BiRNNEncoder, а также поправить все места, где есть зависимость от имени данного слоя
     def __init__(self, cell_name="GRU", num_layers=2, cell_dim=256, dropout=0.2, add_skip_connections=False, add_projection_in=False):
         super().__init__()
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-input_dir=/datadrive/digital_peter_aij2020/data/sample_images
-output_dir=/datadrive/digital_peter_aij2020/predictions/sample_predictions
+input_dir=./data/sample_images
+output_dir=./predictions/sample_predictions
 
-#input_dir=/datadrive/digital_peter_aij2020/data/valid_images
-#output_dir=/datadrive/digital_peter_aij2020/predictions/valid_predictions
+#input_dir=./data/valid_images
+#output_dir=./predictions/valid_predictions
 
 rm -r ${output_dir}
 mkdir ${output_dir}

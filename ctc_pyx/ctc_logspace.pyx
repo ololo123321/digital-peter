@@ -6,7 +6,7 @@ cimport numpy as np
 cdef double NEG_INF = -np.inf
 
 
-cdef float logsumexp2(double p0_log, double p1_log):
+cdef double logsumexp2(double p0_log, double p1_log):
     cdef double p_log_max, s
     p_log_max = max(p0_log, p1_log)
     if p_log_max == NEG_INF:
@@ -15,7 +15,7 @@ cdef float logsumexp2(double p0_log, double p1_log):
     return p_log_max + math.log10(s)
 
 
-cdef float logsumexp3(double p0_log, double p1_log, double p2_log):
+cdef double logsumexp3(double p0_log, double p1_log, double p2_log):
     cdef double p_log_max, s
     p_log_max = max(p0_log, p1_log, p2_log)
     if p_log_max == NEG_INF:
