@@ -1,0 +1,41 @@
+{
+    "width_translation": {
+        "enabled": true,
+        "max_k_left": 1.0
+    },
+    "elastic": {
+        "enabled": true,
+        "alpha": 700,
+        "sigma": 25
+    },
+    "brightness": {
+        "enabled": true,
+        "max_delta": 0.1
+    },
+    "stretching": {
+        "enabled": true,
+        "max_delta": 0.1
+    },
+    "shearing": {
+        "enabled": false,
+        "x_range": [
+            -0.2,
+            0.2
+        ],
+        "y_range": [
+            -0.02,
+            0.02
+        ],
+        "border_mode": 0,
+        "border_value": 255
+    },
+    "rotation": {
+        "enabled": true,
+        "angle_range": [
+            -2,
+            2
+        ],
+        "border_mode": 0,
+        "border_value": 255
+    }
+}

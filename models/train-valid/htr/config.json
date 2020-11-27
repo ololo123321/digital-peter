@@ -1,0 +1,43 @@
+{
+    "data": {
+        "image": {
+            "num_channels": 1,
+            "target_height": 128,
+            "target_width": 1024,
+            "rot90": true,
+            "erode": false
+        },
+        "aug": {
+            "max_delta_stretch": 0.3,
+            "max_delta_brightness": 0.1
+        }
+    },
+    "model": {
+        "image_encoder": {
+            "name": "EncoderFlorV3",
+            "params": {}
+        },
+        "frames_encoder": {
+            "name": "DecoderBaseline",
+            "params": {
+                "cell_name": "GRU",
+                "num_layers": 2,
+                "cell_dim": 128,
+                "dropout": 0.5,
+                "add_skip_connections": false,
+                "add_projection_in": false
+            }
+        },
+        "vocab_size": 67
+    },
+    "train": {
+        "es_patience": 20,
+        "lr_reduction_factor": 0.2,
+        "lr_reduction_patience": 15
+    },
+    "predict": {
+        "batch_size": 32,
+        "beam_width": 100,
+        "top_paths": 100
+    }
+}

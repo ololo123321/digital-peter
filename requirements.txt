@@ -1,0 +1,4 @@
+tensorflow==2.3.0
+editdistance==0.5.3
+Cython==0.29.6
+https://github.com/kpu/kenlm/archive/master.zip
