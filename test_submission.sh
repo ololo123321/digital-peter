@@ -19,7 +19,7 @@ time docker run -it \
     -v ${output_dir}:${output_dir_mnt} \
     -w /tmp \
     --gpus all \
-    tensorflow_kenlm:1.1.3 python predict.py \
+    tensorflow_kenlm:1.1.4 python predict.py \
         --input_dir=${input_dir_mnt} \
         --output_dir=${output_dir_mnt} \
         --w_ctc=50 \
