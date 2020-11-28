@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-input_dir=./data/sample_images
-output_dir=./predictions/sample_predictions
+#input_dir="$(pwd)/data/sample_images"
+#output_dir="$(pwd)/predictions/sample_predictions"
 
-#input_dir=./data/valid_images
-#output_dir=./predictions/valid_predictions
+input_dir="$(pwd)/data/valid_images"
+output_dir="$(pwd)/predictions/valid_predictions"
 
 rm -r ${output_dir}
 mkdir ${output_dir}
