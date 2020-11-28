@@ -9,7 +9,7 @@ import kenlm
 
 from utils import Example
 from models import BaseLanguageModel
-sys.path.append('/app')  # случай контейнера
+sys.path.insert(0, '/app')  # случай контейнера
 from ctc_pyx.ctc import ctc_beam_search, BeamState
 
 
