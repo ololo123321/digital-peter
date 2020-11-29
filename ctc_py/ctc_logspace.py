@@ -1,3 +1,9 @@
+"""
+based on https://github.com/githubharald/CTCDecoder/blob/master/src/BeamSearch.py
+all arithmetic with probabilities is done in log space
+"""
+
+
 import numpy as np
 
 
@@ -66,9 +72,6 @@ class BeamState(ReprMixin):
 
 
 def apply_lm(beam, id2char, lm):
-    """
-    calculate LM score of child beam by taking score from parent beam and bigram probability of last two chars
-    """
     if lm and not beam.is_lm_applied:
         text = ''.join(id2char[i] for i in beam.labeling)
         beam.p_lm = lm(text)

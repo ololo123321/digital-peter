@@ -136,18 +136,19 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--val_mode', action='store_true',
-                        help='если true, то подгружать модели, которые видели 90% выборки (./models/train).'
-                             'нужно для оценки качества.'
-                             'иначе - те, которые видели всю выборку (./models/train-valid)')
-    parser.add_argument('--input_dir', type=str, required=True, help='')
-    parser.add_argument('--output_dir', type=str, required=True, help='')
-    parser.add_argument('--w_ctc', default=50, type=int, required=False, help='')
-    parser.add_argument('--w_birnn', default=15, type=int, required=False, help='')
-    parser.add_argument('--w_transformer', default=10, type=int, required=False, help='')
-    parser.add_argument('--w_joint', default=25, type=int, required=False, help='')
-    parser.add_argument('--alpha', default=0.7, type=float, required=False, help='')
-    parser.add_argument('--beta', default=5, type=float, required=False, help='')
-    parser.add_argument('--beam_width', default=100, type=int, required=False, help='')
+                        help='if true - load models which did not see holdout data (./models/train).'
+                             'if false - load models which saw all data (./models/train-valid).'
+                             'These models were used in final submission.')
+    parser.add_argument('--input_dir', type=str, required=True, help='directory with images')
+    parser.add_argument('--output_dir', type=str, required=True, help='directory with predictions')
+    parser.add_argument('--w_ctc', default=50, type=int, required=False, help='weight of ctc model')
+    parser.add_argument('--w_birnn', default=15, type=int, required=False, help='weight of biGRU LM')
+    parser.add_argument('--w_transformer', default=10, type=int, required=False, help='weight of transformer LM')
+    parser.add_argument('--w_joint', default=25, type=int, required=False, help='weight of joint model')
+    parser.add_argument('--alpha', default=0.7, type=float, required=False, help='weight of LM used in beam search')
+    parser.add_argument('--beta', default=5, type=float, required=False, help='weight of sequence len in beam search')
+    parser.add_argument('--beam_width', default=100, type=int, required=False, help='number of candidates to consider'
+                                                                                    'at each step of beam search')
     args_ = parser.parse_args()
     print(args_)
     main(args_)

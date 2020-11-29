@@ -1,10 +1,12 @@
+from typing import Tuple, Union
 import tensorflow as tf
 import numpy as np
 
-# костыль, чтоб в образ не засовывать opencv
+# костыль, чтоб в образ не засовывать opencv и чтоб в то же время код не падал на предикте
+# TODO: написать как-то нормально
 try:
     import cv2
-except ImportError:  # этот модель нужен только для аугментаций
+except ImportError:  # этот модуль нужен только для аугментаций при обучении
     class cv2:
         BORDER_CONSTANT = 0
         BORDER_REPLICATE = 1
@@ -39,26 +41,30 @@ def stretch_and_cast_to_target_height(img, target_height, max_width, max_delta_s
     return img
 
 
-def scale(img):
+def scale(img: tf.Tensor) -> tf.Tensor:
     return img / 255.0
 
 
-def subtract_mean_for_resnet50(img):
-    """предполагается, что img - батч изображений"""
+def subtract_mean_for_resnet50(img: tf.Tensor) -> tf.Tensor:
+    """
+    Нормализация для resnet50
+    :param img: tf.Tensor of dtype tf.float32 and shape [N, H, W, C]
+    :return:
+    """
     mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32)
     mean = mean[None, None, None, :]
     img -= mean
     return img
 
 
-def random_brightness(img, max_delta_brightness, clip: bool):
+def random_brightness(img: tf.Tensor, max_delta_brightness: float, clip: bool) -> tf.Tensor:
     img = tf.image.random_brightness(img, max_delta=max_delta_brightness)
     if clip:
         img = tf.clip_by_value(img, 0, 1)
     return img
 
 
-def pad(img, target_width, max_k_left, value):
+def pad(img: tf.Tensor, target_width: int, max_k_left: float, value: int) -> tf.Tensor:
     k_left = tf.random.uniform(shape=(), minval=0.0, maxval=max_k_left)
     width_src = tf.shape(img)[1]
     left = tf.cast(tf.cast(target_width - width_src, tf.float32) * k_left, tf.int32)
@@ -68,7 +74,7 @@ def pad(img, target_width, max_k_left, value):
     return image
 
 
-def erode(img):
+def erode(img: tf.Tensor) -> tf.Tensor:
     value = tf.cast(img, tf.float32)
     filters = tf.ones((3, 3, 1), dtype=tf.float32)
     img = tf.nn.erosion2d(
@@ -82,19 +88,25 @@ def erode(img):
     return img
 
 
-def rot90(img):
+def rot90(img: tf.Tensor) -> tf.Tensor:
     return tf.image.rot90(img, k=3)
 
 
-def distort_elastic_cv2(image, alpha=80, sigma=20, num_channels=1, random_state=None):
+def distort_elastic_cv2(
+        img: Union[tf.Tensor, np.ndarray],
+        alpha: int = 80,
+        sigma: int = 20,
+        num_channels: int = 1,
+        random_state: int = None
+) -> np.ndarray:
     """
     Elastic deformation of images as per [Simard2003].
     """
     if random_state is None:
         random_state = np.random.RandomState(None)
 
-    h = image.shape[0]
-    w = image.shape[1]
+    h = img.shape[0]
+    w = img.shape[1]
 
     # Downscaling the random grid and then upsizing post filter
     # improves performance. Approx 3x for scale of 4, diminishing returns after.
@@ -118,8 +130,8 @@ def distort_elastic_cv2(image, alpha=80, sigma=20, num_channels=1, random_state=
     grid_x = (grid_x + rand_x).astype(np.float32)
     grid_y = (grid_y + rand_y).astype(np.float32)
 
-    distorted_img = cv2.remap(image.numpy(), grid_x, grid_y,
-                              borderMode=cv2.BORDER_REFLECT_101, interpolation=cv2.INTER_LINEAR)
+    img = img.numpy() if isinstance(img, tf.Tensor) else img
+    distorted_img = cv2.remap(img, grid_x, grid_y, borderMode=cv2.BORDER_REFLECT_101, interpolation=cv2.INTER_LINEAR)
 
     if num_channels == 1:
         distorted_img = distorted_img[:, :, None]
@@ -127,7 +139,14 @@ def distort_elastic_cv2(image, alpha=80, sigma=20, num_channels=1, random_state=
     return distorted_img
 
 
-def random_shear_img(img, x_range=(-0.1, 0.1), y_range=(0.0, 0.0), num_channels=1, border_mode=cv2.BORDER_CONSTANT, border_value=0):
+def random_shear_img(
+        img: Union[tf.Tensor, np.ndarray],
+        x_range: Tuple[float, float] = (-0.1, 0.1),
+        y_range: Tuple[float, float] = (0.0, 0.0),
+        num_channels: int = 1,
+        border_mode: int = cv2.BORDER_CONSTANT,
+        border_value: int = 0
+) -> np.ndarray:
     """
     https://www.thepythoncode.com/article/image-transformations-using-opencv-in-python#Shearing_yaxis
     """
@@ -147,10 +166,6 @@ def random_shear_img(img, x_range=(-0.1, 0.1), y_range=(0.0, 0.0), num_channels=
     img = img.numpy() if isinstance(img, tf.Tensor) else img
     img = cv2.copyMakeBorder(img, up_down, up_down, left_right, left_right, borderType=border_mode, value=border_value)
 
-    # M = np.float32([
-    #     [1, shx, -shx * w_new / 2],
-    #     [shy, 1, -shy * h_new / 2],
-    # ])
     M = np.float32([
         [1, shx, 0],
         [shy, 1, 0],
@@ -164,7 +179,13 @@ def random_shear_img(img, x_range=(-0.1, 0.1), y_range=(0.0, 0.0), num_channels=
     return img
 
 
-def random_rotate_img(img, angle_range=(-5, 5), num_channels=1, border_mode=cv2.BORDER_REPLICATE, border_value=0):
+def random_rotate_img(
+        img: Union[tf.Tensor, np.ndarray],
+        angle_range: Tuple[int, int] = (-5, 5),
+        num_channels: int = 1,
+        border_mode: int = cv2.BORDER_REPLICATE,
+        border_value: int = 0
+) -> np.ndarray:
     """
     Rotates an image (angle in degrees) and expands image to avoid cropping
     https://vovkos.github.io/doxyrest-showcase/opencv/sphinx_rtd_theme/enum_cv_BorderTypes.html
