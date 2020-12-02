@@ -1,11 +1,6 @@
 3rd place solution in digital peter competition: https://ods.ai/competitions/aij-petr
 
-setup:
-```bash
-pip install -r requirements.txt
-python setup.py build_ext --inplace
-```
-run submission on validation data:
+run submission on validation data in docker:
 ```bash
 bash test_submission.sh
 ```
