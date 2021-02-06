@@ -13,13 +13,15 @@ chmod 777 ${output_dir}
 input_dir_mnt=/data
 output_dir_mnt=/output
 
+image=ololo123321/tensorflow_kenlm:1.1.4
+
 time docker run -it \
     -v $(pwd):/tmp \
     -v ${input_dir}:${input_dir_mnt} \
     -v ${output_dir}:${output_dir_mnt} \
     -w /tmp \
     --gpus all \
-    tensorflow_kenlm:1.1.4 python predict.py \
+    ${image} python predict.py \
         --input_dir=${input_dir_mnt} \
         --output_dir=${output_dir_mnt} \
         --w_ctc=50 \

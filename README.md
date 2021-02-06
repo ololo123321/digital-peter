@@ -2,13 +2,11 @@
 
 run submission on validation data in docker:
 ```bash
-bash test_submission.sh
+bash predict.sh
 ```
 evaluate
 ```bash
-python evaluate.py \
-    --predictions_dir=./predictions/valid_predictions \
-    --answers_dir=./data/valid_texts
+bash evaluate.sh
 ```
 expected output:
 ```bash
